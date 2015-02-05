@@ -1,18 +1,25 @@
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import javax.swing.text.*;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup; 
 import org.jsoup.helper.Validate;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.IOException;
+
 import org.jsoup.*;
 import org.jsoup.helper.Validate;
 /**
@@ -26,8 +33,23 @@ import org.jsoup.helper.Validate;
  */
 public class Crawler
 {
+	DB2  db = new DB2();	
+	 static HashMap<String, String> hash = new HashMap<String, String>();
+
+	
+	
+	public Crawler(DB2 db2, storage storage) 
+	{
+		super();
+		this.db = db2;
+		//this.storage = storage;
+	}
+
+	//instansiate a new version of class database
+	static DB2 db2 = new DB2();
 	public static void main(String[] args) throws IOException 
 	{	
+		
 		//hashset for holding the links to follow
 		HashSet<String> anchors = new HashSet<String>(); 
 
@@ -38,7 +60,16 @@ public class Crawler
 		anchors = createUrlList(url);
 
 		extractString(anchors, url);
-
+		
+		/*
+		for (Entry<String, String> entry : hash.entrySet()) 
+		{
+		    System.out.println( "key=" + entry.getKey() +  ", value=" + entry.getValue());
+		}
+		*/
+		//storage.setMap(hash);
+		storage storage = new storage(hash);
+		storage.toString();
 	}
 	
 	/*
@@ -95,16 +126,17 @@ public class Crawler
 				}
 			}	    		   		
 		}
-
+		
 		/*
+		
 	    	//print method for HashSet
 	    	for (String s : anchors) 
 	    	{
 	    		capturedUrls++;
-	    	   // System.out.println(s);
+	    	    System.out.println(s);
 	    	}
-		 */
-
+		 
+	*/
 		return anchors;    	
 	}
 
@@ -123,7 +155,7 @@ public class Crawler
 				result = url + s;
 				//System.out.println("title" + s);  
 				//System.out.println("url" + url); 
-				//System.out.println(title);
+				//System.out.println(result);
 				//method commented out calls the print method +++ print to file
 				printHtml(result, s);
 			
@@ -139,7 +171,7 @@ public class Crawler
 		
 		Document doc = Jsoup.connect(url).get();
 		 title = EditTitle(url);
-		 //System.out.println(title);
+		// System.out.println(title);
 		 
 		Elements hrefs = doc.select("section"); 
 		for(Element e : hrefs)
@@ -150,10 +182,29 @@ public class Crawler
 				//System.out.println(anchor);
 				
 				//method commented out saves the content as text and title as title for doc
+				/*
+				 * TODO this is where we put code to save it to the database
+				 * Columns are
+				 * 1. Date of article
+				 * 2. Heading of article
+				 * 3. Article
+				 * 
+				 * TODO inappropriate to put it here as it is in a loo[
+				 * better to save it somewhere and then access it in one swoop for the DB
+				 * considering a hashmap
+				 */
 				//saveToFile(title, anchor);
+				//commitToDatabase();
+				hash.put(title, anchor);
+				//System.out.println("Getting in here?");
 			}
 		}
 		
+	}
+
+	public Crawler() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	/*
@@ -162,6 +213,7 @@ public class Crawler
 	static void saveToFile(String title, String  text) throws FileNotFoundException
 	{
 		PrintWriter out = new PrintWriter("articles\\" + title + ".txt");
+		//System.out.println(text);
 		out.println(text);
 		out.close();	
 	}
@@ -230,6 +282,11 @@ public class Crawler
 		return(Finalt);
 	}
 	
+	public void commitToDatabase()
+	{
+		System.out.println("Class accessed form method");
+		db2.getClass();
+	}
 	
 }
 
